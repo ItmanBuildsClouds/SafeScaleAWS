@@ -1,19 +1,18 @@
+variable "aws_region" {
+    default = "eu-central-1"
+}
 variable "cidr_block" {
     description = "CIDR block for the VPC"
     type = string
     default = "10.0.0.0/16"
 }
-variable "aws_region" {
-    type = string
-    default = "eu-central-1"
-}
 variable "project_name" {
     type = string
-    default = "default-name"
+    default = "safescale-aws"
 }
 variable "environment" {
     type = string
-    default = "default"
+    default = "dev"
 }
 variable "public_cidrs" {
     type = map(string)

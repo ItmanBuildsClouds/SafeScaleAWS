@@ -13,7 +13,7 @@ resource "aws_subnet" "public" {
     for_each = var.public_cidrs
     vpc_id = aws_vpc.main_vpc.id
     cidr_block = each.value
-    availability_zone = each.key
+    availability_zone = "${var.aws_region}${each.key}"
     map_public_ip_on_launch = true
     tags = {
         Name = "${var.project_name}-public-${each.key}"
@@ -25,7 +25,7 @@ resource "aws_subnet" "private_app" {
     for_each = var.private_app_cidrs
     vpc_id = aws_vpc.main_vpc.id
     cidr_block = each.value
-    availability_zone = each.key
+    availability_zone = "${var.aws_region}${each.key}"
     tags = {
         Name = "${var.project_name}-private_app-${each.key}"
         Environment = var.environment
@@ -36,7 +36,7 @@ resource "aws_subnet" "private_db" {
     for_each = var.private_db_cidrs
     vpc_id = aws_vpc.main_vpc.id
     cidr_block = each.value
-    availability_zone = each.key
+    availability_zone = "${var.aws_region}${each.key}"
     tags = {
         Name = "${var.project_name}-private_db-${each.key}"
         Environment = var.environment
