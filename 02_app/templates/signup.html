@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Rock, Paper, Scissors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            transition: background 0.3s;
+        }
+        .dark body {
+            background: linear-gradient(135deg, #1e293b, #475569);
+        }
+        .box {
+            animation: fadeIn 0.8s ease-in;
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .password-container {
+            position: relative;
+        }
+        .password-container input {
+            padding-right: 40px;
+        }
+        .password-container .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+        }
+        .dark .password-container .toggle-password {
+            color: #ccc;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="min-h-screen flex flex-col justify-center items-center">
+        <div class="box bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 text-center">
+            <div class="flex justify-end mb-4">
+                <button id="theme-toggle" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-blue-900 dark:text-blue-300 mb-6">Sign Up</h2>
+            {% if error %}
+                <p class="text-red-500 mb-4">{{ error }}</p>
+            {% endif %}
+            <form method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-1">Email</label>
+                    <input type="email" name="email" class="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-1">Username</label>
+                    <input type="text" name="username" class="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-1">Password</label>
+                    <div class="password-container">
+                        <input type="password" name="password" id="password" class="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" required>
+                        <i class="fas fa-eye toggle-password" id="toggle-password"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-1">Re-enter Password</label>
+                    <div class="password-container">
+                        <input type="password" name="reenter_password" id="reenter-password" class="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" required>
+                        <i class="fas fa-eye toggle-password" id="toggle-reenter-password"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 w-full text-base sm:text-lg">
+                    <i class="fas fa-user-plus mr-1"></i> Sign Up
+                </button>
+            </form>
+            <p class="mt-4 text-gray-700 dark:text-gray-300">
+                Already have an account? <a href="{{ url_for('login') }}" class="text-blue-500 hover:underline">Login</a>
+            </p>
+        </div>
+    </div>
+    <script>
+        const toggleButton = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        if (localStorage.getItem('theme') === 'dark') {
+            htmlElement.classList.add('dark');
+            toggleButton.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        toggleButton.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                toggleButton.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                localStorage.setItem('theme', 'light');
+                toggleButton.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        });
+
+        const togglePassword = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('password');
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.classList.toggle('fa-eye');
+            togglePassword.classList.toggle('fa-eye-slash');
+        });
+
+        const toggleReenterPassword = document.getElementById('toggle-reenter-password');
+        const reenterPasswordInput = document.getElementById('reenter-password');
+        toggleReenterPassword.addEventListener('click', () => {
+            const type = reenterPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            reenterPasswordInput.setAttribute('type', type);
+            toggleReenterPassword.classList.toggle('fa-eye');
+            toggleReenterPassword.classList.toggle('fa-eye-slash');
+        });
+    </script>
+</body>
+</html>
