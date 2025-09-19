@@ -1,0 +1,31 @@
+name: "CI Build Docker Image"
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+          - '02_app/**'
+
+    pull_request:
+        branches:
+            - main
+        paths:
+          - '02_app/**'
+
+jobs:
+    docker-build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: checkout
+              uses: actions/checkout@v4
+            - name: build_image
+              run: |
+                docker build ./02_app/ -t itmanbuildsclouds/rockpapergame:latest
+            - name: push_image to dockerhub
+              run: |
+                docker login -u itmanbuildsclouds -p ${{ secrets.DOCKER_HUB_TOKEN }}
+                docker push itmanbuildsclouds/rockpapergame:latest
+
+            
