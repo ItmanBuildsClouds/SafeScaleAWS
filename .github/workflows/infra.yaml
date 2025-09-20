@@ -4,11 +4,13 @@ on:
     push:
         branches:
             - main
+            - test/cicd2
         paths:
             - '03_terraform/**'
     pull_request:
         branches:
             - main
+            - test/cicd2
         paths:
             - '03_terraform/**'
 
