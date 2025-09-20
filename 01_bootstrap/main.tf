@@ -1,3 +1,7 @@
+# ==================================================
+# == 1. Github User Role
+# ==================================================
+
 data "aws_iam_policy_document" "git_actions_trust_policy" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -41,13 +45,37 @@ data "aws_iam_policy_document" "github_actions_policy_remote_state" {
   }
 }
 
+data "aws_iam_policy_document" "github_actions_allperm" {
+  statement {
+    sid = "AllPermissionsforCICDTest"
+    actions = ["*"]
+    resources = ["*"]
+  }
+}
+
+
+
 resource "aws_iam_policy" "github_actions_policy_remote_state" {
   name = "github-actions-remote-state"
   policy = data.aws_iam_policy_document.github_actions_policy_remote_state.json
 }
 
+resource "aws_iam_policy" "github_actions_policy_allperm" {
+  name = "github-actions-allperm"
+  policy = data.aws_iam_policy_document.github_actions_allperm.json
+}
+
+
+
 resource "aws_iam_policy_attachment" "github_actions_policy_remote_state_attach" {
     name = "github-actions-policy-remote-state"
     policy_arn = aws_iam_policy.github_actions_policy_remote_state.arn
+    roles = [aws_iam_role.github_actions_role.name]
+}
+
+
+resource "aws_iam_policy_attachment" "github_actions_policy_allperm_attach" {
+    name = "github-actions-policy-allperm"
+    policy_arn = aws_iam_policy.github_actions_policy_allperm.arn
     roles = [aws_iam_role.github_actions_role.name]
 }
