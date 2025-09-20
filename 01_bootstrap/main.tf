@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "git_actions_trust_policy" {
     condition {
       test = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values = ["repo:ItmanBuildsClouds/SafeScaleAWS:ref:refs/heads/main",
+      values = ["repo:ItmanBuildsClouds/SafeScaleAWS:ref:refs/heads/test/cicd2",
                 "repo:ItmanBuildsClouds/SafeScaleAWS:pull_request"]
     }
     condition {
