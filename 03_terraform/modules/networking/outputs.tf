@@ -20,3 +20,4 @@ output "app_sg" {
 output "db_sg" {
     value = aws_security_group.db.id
 }
+
