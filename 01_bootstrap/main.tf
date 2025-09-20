@@ -15,6 +15,11 @@ data "aws_iam_policy_document" "git_actions_trust_policy" {
       values = ["repo:ItmanBuildsClouds/SafeScaleAWS:ref:refs/heads/main",
                 "repo:ItmanBuildsClouds/SafeScaleAWS:pull_request"]
     }
+    condition {
+      test = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values = ["sts.amazonaws.com"]
+    }
   }
 }
 resource "aws_iam_role" "github_actions_role" {
