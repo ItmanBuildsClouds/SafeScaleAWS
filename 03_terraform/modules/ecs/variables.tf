@@ -19,3 +19,4 @@ variable "private_app_subnet_ids" {
 variable "app_sg" {
     type = string
 }
+
