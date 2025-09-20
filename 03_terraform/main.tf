@@ -38,4 +38,3 @@ module "ecs" {
   app_sg                 = module.networking.app_sg
   alb_target_group_arn   = module.compute.alb_target_group_arn
 }
-
