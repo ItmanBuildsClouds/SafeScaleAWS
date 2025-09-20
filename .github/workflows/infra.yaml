@@ -1,0 +1,51 @@
+name: Build Infrastructure
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - '03_terraform/**'
+    pull_request:
+        branches:
+            - main
+        paths:
+            - '03_terraform/**'
+
+    
+
+jobs:
+    build_infra:
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            contents: read
+
+        steps:
+            - name: Code Checkout
+              uses: action/checkout@v4
+
+            - name: Configure AWS credentials OIDC
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                role-to-assume: "arn:aws:iam::907253920314:role/github-actions-terraform"
+                aws-region: eu-central-1
+
+            - name: Terraform Setup
+              uses: hashicorp/setup-terraform@v3
+
+            - name: Terraform Init
+              run: terraform -chdir=03_terraform init
+
+            - name: Terraform Plan
+              if: github.event_name == 'pull_request'
+              run: terraform -chdir=03_terraform plan
+
+            - name: Terraform Apply
+              if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'}}
+              run: terraform -chdir=03_terraform apply --auto-approve
+
+              
+
+
+            
