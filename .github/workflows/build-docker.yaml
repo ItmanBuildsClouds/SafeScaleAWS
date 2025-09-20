@@ -4,12 +4,14 @@ on:
     push:
         branches:
             - main
+            - test/cicd2
         paths:
           - '02_app/**'
 
     pull_request:
         branches:
             - main
+            - test/cicd2
         paths:
           - '02_app/**'
 
