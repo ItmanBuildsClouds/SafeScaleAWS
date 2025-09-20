@@ -36,3 +36,4 @@ variable "private_db_cidrs" {
         "b" = "10.0.6.0/24"
     }
 }
+
