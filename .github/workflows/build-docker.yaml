@@ -33,7 +33,7 @@ jobs:
             - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+                role-to-assume: "arn:aws:iam::907253920314:role/github-actions"
                 aws-region: eu-central-1
 
             - name: "Login to Amazon ECR"
@@ -41,11 +41,20 @@ jobs:
               uses: aws-actions/amazon-ecr-login@v2
 
 
+            - name: Get ECR Repository Name
+              id: ecr-info
+              run: |
+                cd 03_terraform
+                terraform init
+                ECR_REPO=$(terraform output -raw ecr_name)
+                echo "repo_name=$ECR_REPO" >> $GITHUB_OUTPUT
+
+
             - name: Extract metadata
               id: meta
               uses: docker/metadata-action@v5
               with:
-                images: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}
+                images: ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-info.outputs.repo_name }}
                 tags: |
                   type=sha,prefix=,format=long
 
@@ -59,7 +68,7 @@ jobs:
               with:
                 context: ./02_app
                 platforms: linux/amd64
-                push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+                push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/test/cicd2' }}
                 tags: ${{ steps.meta.outputs.tags }}
                 labels: ${{ steps.meta.outputs.labels }}
                 cache-from: type=gha
@@ -69,41 +78,49 @@ jobs:
               if: success()
               run: |
                 echo "Build completed successsfully"
-                if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+                if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/test/cicd2" ]]; then
                   echo "Image pushed to Docker Hub"
                   echo "Available tags:"
                   echo "${{ steps.meta.outputs.tags }}"
                 else
                   echo "Image built locally - no push"
                 fi
-    # deploy-infrastructure:
-    #   name: "Deploy Infrastructure with Terraform"
-    #   runs-on: ubuntu-latest
-    #   needs: [docker-build]
+    deploy-infrastructure:
+       name: "Deploy Infrastructure with Terraform"
+       runs-on: ubuntu-latest
+       needs: [docker-build]
 
-    #   steps:
-    #       - name: Checkout code
-    #         uses: actions/checkout@v4
+       steps:
+           - name: Checkout code
+             uses: actions/checkout@v4
 
-    #       - name: Configure AWS Credentials
-    #         uses: aws-actions/configure-aws-credentials@v4
-    #         with:
-    #             role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
-    #             aws-region: eu-central-1
+           - name: Configure AWS Credentials
+             uses: aws-actions/configure-aws-credentials@v4
+             with:
+                 role-to-assume: "arn:aws:iam::907253920314:role/github-actions"
+                 aws-region: eu-central-1
 
-    #       - name: Setup Terraform
-    #         uses: hashicorp/setup-terraform@v3
+           - name: Setup Terraform
+             uses: hashicorp/setup-terraform@v3
 
-    #       - name: Terraform Plan
-    #         if: github.event_name == 'pull_request'
-    #         run: |
-    #           cd 03_terraform
-    #           terraform init
-    #           terraform plan -var="image_url=${{ needs.docker-build.outputs.image_url }}"
+           - name: Deploy
+             run: |
+               cd 03_terraform
+               terraform init
+               terraform apply -auto-approve -var="image_url=${{ needs.docker-build.outputs.image_url }}"
 
-    #       - name: Terraform Apply
-    #         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    #         run: |
-    #           cd 03_terraform
-    #           terraform init
-    #           terraform apply -auto-approve -var="image_url=${{ needs.docker-build.outputs.image_url }}"
+           - name: Get ECS Info
+             run: |
+               cd 03_terraform
+               terraform init
+               ECS_CLUSTER=$(terraform output -raw ecs_cluster_name)
+               ECS_SERVICE=$(terraform output -raw ecs_service_name)
+               echo "ECS_CLUSTER=$ECS_CLUSTER" >> $GITHUB_ENV
+               echo "ECS_SERVICE=$ECS_SERVICE" >> $GITHUB_ENV
+
+           - name: Force ECS Update
+             run: |
+                aws ecs update-service \
+                --cluster ${{ env.ECS_CLUSTER }} \
+                --service ${{ env.ECS_SERVICE }} \
+                --force-new-deployment
