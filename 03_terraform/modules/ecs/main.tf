@@ -37,6 +37,8 @@ resource "aws_ecs_task_definition" "ecs-task-definition" {
     cpu = "1024"
     memory = "2048"
 
+    execution_role_arn = aws_iam_role.ecs-task-execution.arn
+
 
     container_definitions = jsonencode([
     {
@@ -85,7 +87,6 @@ resource "aws_ecs_service" "ecs-service" {
     cluster = aws_ecs_cluster.ecs.id
     task_definition = aws_ecs_task_definition.ecs-task-definition.arn
     desired_count = 2
-    iam_role = aws_iam_role.ecs-task-execution.arn
     depends_on = [ aws_iam_role.ecs-task-execution ]
     launch_type = "FARGATE"
 
